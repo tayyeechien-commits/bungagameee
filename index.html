@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuiz Bunga Kebangsaan & Bahasa Melayu Interaktif</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --sv-brown: #5d4037;
+            --sv-dark-brown: #3d2a23;
+            --font-pixel: 'VT323', monospace;
+            --font-main: 'Fredoka', sans-serif;
+            --bg-l1: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%); 
+            --bg-l2: linear-gradient(135deg, #f6d365 0%, #fda085 100%); 
+            --bg-l3: linear-gradient(180deg, #a1c4fd 0%, #c2e9fb 100%);
+            --lego-red: #ff4757;
+            --lego-blue: #54a0ff;
+            --ocean-vibrant: #4facfe;
+        }
+
+        body {
+            font-family: var(--font-main);
+            margin: 0; padding: 15px;
+            display: flex; justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            transition: background 0.8s ease;
+            background: var(--bg-l1);
+            color: var(--sv-brown); 
+        }
+
+        .pixel-font { font-family: var(--font-pixel); }
+
+        /* Container & Card Styling */
+        .game-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 6px solid var(--sv-brown);
+            border-radius: 20px;
+            box-shadow: 10px 10px 0px rgba(0,0,0,0.15);
+        }
+
+        /* Title Animation */
+        .bouncing-title { 
+            animation: titleBounce 2s infinite ease-in-out; 
+            text-shadow: 3px 3px 0px #ff4757, -1px -1px 0 #fff;
+        }
+        @keyframes titleBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+
+        /* Monster Mouth Level 1 */
+        #monster-mouth {
+            width: 280px; height: 210px; background: #2d3436; border: 8px solid #ff4757; margin: 0 auto; position: relative;
+            border-radius: 40px 40px 110px 110px; display: flex; flex-wrap: wrap; align-content: center; justify-content: center;
+            box-shadow: 0 0 20px #ff4757, inset 0 0 15px #ff4757; animation: mouthActive 1.2s infinite alternate ease-in-out;
+            padding: 10px; box-sizing: border-box;
+        }
+        @keyframes mouthActive { 0% { transform: scale(1); } 100% { transform: scale(1.04); } }
+        #monster-mouth::before { content: "▼▼▼▼▼▼"; position: absolute; top: -2px; color: #fff; font-size: 2.2rem; width: 100%; text-align: center; letter-spacing: 6px; filter: drop-shadow(0 0 8px #ff4757); }
+
+        /* Draggable elements */
+        .draggable {
+            padding: 10px 16px; background: #fff; border: 4px solid var(--sv-brown); margin: 6px; display: inline-block; font-size: 1.1rem;
+            box-shadow: 4px 4px 0px var(--sv-brown); user-select: none; position: relative; z-index: 50; color: #2d3436; font-weight: bold;
+            animation: cardFloat 3s infinite ease-in-out; transition: all 0.2s ease;
+            touch-action: none; border-radius: 12px; cursor: grab;
+        }
+        .draggable:hover { transform: scale(1.05) rotate(2deg); background: #fff9c4; }
+        .draggable.dragging-touch {
+            opacity: 0.95; animation: none; transform: scale(1.08); box-shadow: 8px 8px 0px rgba(0,0,0,0.2); cursor: grabbing;
+        }
+        @keyframes cardFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+        .lego-btn {
+            background: var(--lego-red); color: white; border: 4px solid var(--sv-brown);
+            padding: 12px 28px; font-size: 1.4rem; cursor: pointer; box-shadow: 0 6px 0 #c0392b; position: relative; border-radius: 14px;
+            font-weight: bold; transition: all 0.1s ease;
+        }
+        .lego-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 0 #c0392b; }
+        .lego-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #c0392b; }
+
+        /* Level 2 Baskets */
+        .basket-container { display: flex; flex-direction: row; gap: 12px; justify-content: space-between; margin-top: 20px; }
+        .pixel-basket { flex: 1 1 0; min-width: 0; min-height: 240px; background: #ffbe76; border: 5px solid var(--sv-brown); border-radius: 0 0 25px 25px; position: relative; padding: 10px; padding-top: 50px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 8px; overflow: hidden; }
+        .pixel-basket h3 { position: absolute; top: 6px; width: 94%; text-align: center; background: var(--sv-brown); color: #fff; margin: 0; font-size: 1.05rem; border-radius: 8px; left: 3%; padding: 4px 0; font-weight: bold; }
+        #level2 .draggable { min-width: 120px; text-align: center; font-size: 0.95rem; padding: 8px; }
+        #level2 .pixel-basket .draggable { width: 100%; max-width: 140px; min-width: 0; margin: 0; padding: 5px 3px; box-sizing: border-box; font-size: 0.85rem; line-height: 1.1; }
+
+        /* Level 3 Fishing */
+        #sea-area { width: 100%; min-height: 520px; background: var(--bg-l3); border: 6px solid var(--sv-brown); position: relative; overflow: hidden; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 220px 15px 15px 15px; box-sizing: border-box; touch-action: none; border-radius: 15px; }
+        #fishing-boat { position: absolute; top: 50px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 500px; height: 140px; background: #ff7675; border: 5px solid var(--sv-brown); border-radius: 8px 8px 90px 90px; z-index: 100; box-shadow: 0 10px 0 rgba(0,0,0,0.1); }
+        #current-target { font-size: 1.25rem; font-weight: bold; color: #fff9c4; text-shadow: 2px 2px 0 var(--sv-brown); margin-top: 5px; padding: 0 10px; }
+
+        .fish-bubble { background: rgba(255,255,255,0.95); border: 4px solid var(--ocean-vibrant); padding: 10px; border-radius: 18px; font-size: 1.05rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; box-shadow: 6px 6px 0px rgba(0,0,0,0.05); text-align: center; position: relative; z-index: 10; color: #000; font-weight: bold; box-sizing: border-box; cursor: pointer; transition: transform 0.2s ease; }
+        .fish-bubble:hover { transform: scale(1.06); background: #e0f7fa; }
+        .swim-anim { animation: swimUpDown 3s infinite ease-in-out; }
+        @keyframes swimUpDown { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+        .hooked-up { position: fixed !important; z-index: 200 !important; animation: hookedShake 0.12s infinite alternate !important; transition: all 0.9s cubic-bezier(0.25, 1, 0.5, 1) !important; pointer-events: none; }
+        @keyframes hookedShake { 0% { transform: rotate(-15deg) scale(1.15); } 100% { transform: rotate(15deg) scale(1.15); } }
+
+        /* Tali & Mata Pancing */
+        #fishing-line {
+            position: absolute;
+            width: 3px;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 0 4px rgba(0,0,0,0.2);
+            z-index: 150;
+            pointer-events: none;
+            transition: all 0.4s ease-out;
+            opacity: 0;
+        }
+        #fishing-hook {
+            position: absolute;
+            font-size: 2.5rem;
+            z-index: 151;
+            pointer-events: none;
+            transform: translate(-50%, -10px);
+            transition: all 0.4s ease-out;
+            opacity: 0;
+        }
+
+        /* Floating Score Board */
+        #score-board {
+            position: fixed; top: 15px; right: 15px; background: #fff; border: 4px solid var(--sv-brown); border-radius: 14px; padding: 6px 16px; font-size: 1.4rem; font-weight: bold; box-shadow: 4px 4px 0px rgba(0,0,0,0.15); z-index: 4000; display: none; color: #d35400;
+        }
+
+        .correct-answer { background: #55efc4 !important; border-color: #00b894 !important; }
+        .shake { animation: shake 0.4s both; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-4px,0,0); } 40%, 60% { transform: translate3d(6px,0,0); } }
+
+        /* Responsiveness */
+        @media (max-width: 768px) {
+            .basket-container { flex-direction: column; }
+            #sea-area { grid-template-columns: repeat(2, 1fr); padding-top: 180px; }
+            .fish-bubble { font-size: 0.9rem; }
+        }
+        @media (max-width: 480px) {
+            #sea-area { grid-template-columns: 1fr; padding-top: 170px; }
+            .draggable { font-size: 0.95rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- BOARD MARKAH -->
+<div id="score-board" class="pixel-font">
+    ⭐ MARKAH: <span id="total-score">0</span>
+</div>
+
+<!-- CONTAINER UTAMA -->
+<div id="main-card" class="game-card w-full max-w-4xl p-6 relative">
+    
+    <!-- ==================================================== -->
+    <!-- MENU INDEX / UTAMA -->
+    <!-- ==================================================== -->
+    <div id="menu-screen" class="text-center">
+        <h1 class="text-4xl md:text-5xl font-extrabold text-pink-600 bouncing-title mb-2">
+            🌺 KUIZ BUNGA KEBANGSAAN 🌺
+        </h1>
+        <p class="text-lg md:text-xl font-semibold mb-4 text-amber-900">
+            Pelajari Topik Bunga Raya & Bahasa Kebangsaan dengan Permainan Interaktif!
+        </p>
+
+        <!-- Placeholder Gambar Bunga Raya Utama -->
+        <div class="my-4 flex justify-center">
+            <div class="border-4 border-amber-900 rounded-2xl overflow-hidden bg-white shadow-md max-w-md p-2">
+                <!-- GAMBAR 1: Bunga Kebangsaan Utama -->
+                <img id="img-main-hibiscus" 
+                     src="bunga_kebangsaan.png" 
+                     alt="Bunga Raya Kebangsaan" 
+                     class="w-full h-48 md:h-56 object-cover rounded-xl"
+                     onerror="this.src='https://placehold.co/500x300/ff4757/ffffff?text=bunga_kebangsaan.png+tidak+ditemui'">
+            </div>
+        </div>
+
+        <!-- 4 Subtopik Info Badges -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-6 text-xs md:text-sm font-semibold">
+            <div class="bg-red-100 border-2 border-red-400 p-2 rounded-xl text-red-800">
+                1️⃣ Latar Belakang & Pemilihan
+            </div>
+            <div class="bg-pink-100 border-2 border-pink-400 p-2 rounded-xl text-pink-800">
+                2️⃣ Nama & Warna Merah
+            </div>
+            <div class="bg-yellow-100 border-2 border-yellow-500 p-2 rounded-xl text-yellow-800">
+                3️⃣ 5 Kelopak & Rukun Negara
+            </div>
+            <div class="bg-green-100 border-2 border-green-400 p-2 rounded-xl text-green-800">
+                4️⃣ Simbol & Kegunaan Rakyat
+            </div>
+        </div>
+
+        <h3 class="text-xl font-bold mb-3 text-amber-900">Sila Pilih Permainan Mini:</h3>
+        <div class="flex flex-wrap justify-center gap-4">
+            <button onclick="startLevel(1)" class="lego-btn bg-red-500 hover:bg-red-600">
+                👾 Level 1: Monster Lapar
+            </button>
+            <button onclick="startLevel(2)" class="lego-btn bg-amber-500 hover:bg-amber-600">
+                🧺 Level 2: Bakul Ajaib
+            </button>
+            <button onclick="startLevel(3)" class="lego-btn bg-sky-500 hover:bg-sky-600">
+                🎣 Level 3: Pancingan Ilmu
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================================================== -->
+    <!-- LEVEL 1: MONSTER LAPAR (Latar Belakang & Pemilihan) -->
+    <!-- ==================================================== -->
+    <div id="level1-screen" class="hidden text-center">
+        <div class="flex justify-between items-center mb-2">
+            <button onclick="showMenu()" class="text-sm font-bold bg-gray-200 border-2 border-amber-900 px-3 py-1 rounded-lg">⬅ Kembali ke Menu</button>
+            <span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded font-bold">Subtopik 1: Latar Belakang & Pemilihan</span>
+        </div>
+        
+        <h2 class="text-2xl md:text-3xl font-extrabold text-red-600 pixel-font mb-1">【Level 1】Monster Lapar Bunga Raya!</h2>
+        <p class="text-sm md:text-base text-gray-700 mb-3">
+            Beri Monster makan <b>3 fakta BENAR</b> tentang Sejarah & Latar Belakang Pemilihan Bunga Raya! Tarik jawapan betul ke dalam mulut Monster!
+        </p>
+
+        <!-- Placeholder Gambar Subtopik 1 -->
+        <div class="flex justify-center mb-3">
+            <img src="bunga_kebangsaan.png" 
+                 alt="Sejarah Pemilihan" 
+                 class="h-20 object-contain rounded-lg border-2 border-amber-900"
+                 onerror="this.src='https://placehold.co/400x120/ff7675/ffffff?text=bunga_kebangsaan.png'">
+        </div>
+
+        <div id="options-l1" class="dropzone min-h-[90px] p-2 border-2 border-dashed border-amber-800 rounded-xl mb-4 bg-amber-50"></div>
+        
+        <div id="monster-mouth" class="dropzone"></div>
+        
+        <div class="mt-4">
+            <button class="lego-btn" onclick="checkLevel1()">NGAP! (BERI MAKAN)</button>
+        </div>
+    </div>
+
+    <!-- ==================================================== -->
+    <!-- LEVEL 2: BAKUL AJAIB (Kategori Kelopak & Warna Merah) -->
+    <!-- ==================================================== -->
+    <div id="level2-screen" class="hidden text-center">
+        <div class="flex justify-between items-center mb-2">
+            <button onclick="showMenu()" class="text-sm font-bold bg-gray-200 border-2 border-amber-900 px-3 py-1 rounded-lg">⬅ Kembali ke Menu</button>
+            <span class="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded font-bold">Subtopik 2 & 3: Warna & 5 Kelopak</span>
+        </div>
+
+        <h2 class="text-2xl md:text-3xl font-extrabold text-amber-600 pixel-font mb-1">【Level 2】Bakul Pengkategorian Bunga!</h2>
+        <p class="text-sm md:text-base text-gray-700 mb-2">
+            Isikan item/fakta berkenaan Bunga Kebangsaan ke dalam bakul yang betul!
+        </p>
+
+        <!-- Placeholder Gambar Subtopik 2 & 3 -->
+        <div class="flex justify-center gap-2 mb-2">
+            <img src="bunga_merah.png" class="h-14 rounded border-2 border-amber-900 object-cover" onerror="this.src='https://placehold.co/200x80/ff4757/ffffff?text=bunga_merah.png'">
+            <img src="bunga_5kelopak.gif" class="h-14 rounded border-2 border-amber-900 object-cover" onerror="this.src='https://placehold.co/200x80/f1c40f/ffffff?text=bunga_5kelopak.gif'">
+        </div>
+
+        <div id="options-l2" class="min-h-[80px] p-2 border-2 border-dashed border-amber-800 rounded-xl mb-3 bg-amber-50"></div>
+        
+        <div class="basket-container">
+            <div id="box-warna" class="dropzone pixel-basket">
+                <h3>🔴 Nama & Warna Merah</h3>
+            </div>
+            <div id="box-kelopak" class="dropzone pixel-basket">
+                <h3>🌺 5 Kelopak Rukun Negara</h3>
+            </div>
+            <div id="box-sejarah" class="dropzone pixel-basket">
+                <h3>📜 Sejarah & Lain-lain</h3>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <button class="lego-btn bg-amber-500 hover:bg-amber-600" onclick="checkLevel2()">SEMAK BAKUL</button>
+        </div>
+    </div>
+
+    <!-- ==================================================== -->
+    <!-- LEVEL 3: MEMANCING ILMU (Kegunaan Simbol Dalam Kehidupan) -->
+    <!-- ==================================================== -->
+    <div id="level3-screen" class="hidden text-center">
+        <div class="flex justify-between items-center mb-2">
+            <button onclick="showMenu()" class="text-sm font-bold bg-gray-200 border-2 border-amber-900 px-3 py-1 rounded-lg">⬅ Kembali ke Menu</button>
+            <span class="text-xs bg-sky-100 text-sky-800 px-2 py-1 rounded font-bold">Subtopik 4: Simbol Dalam Kehidupan</span>
+        </div>
+
+        <h2 class="text-2xl md:text-3xl font-extrabold text-sky-600 pixel-font mb-1">【Level 3】Memancing Simbol Bunga Raya!</h2>
+        <p class="text-sm md:text-base text-gray-700 mb-1">
+            Klik atau pilih <b>ikan jawapan yang betul</b> berdasarkan soalan kegunaan Bunga Raya pada bot!
+        </p>
+
+        <!-- Placeholder Gambar Subtopik 4 -->
+        <div class="flex justify-center mb-2">
+            <img src="bunga_simbol.png" class="h-12 rounded border-2 border-amber-900 object-cover" onerror="this.src='https://placehold.co/400x70/0984e3/ffffff?text=bunga_simbol.png'">
+        </div>
+
+        <div class="text-amber-900 text-lg font-bold mb-2">
+            Kemajuan Pancingan: <span id="l3-score" class="text-red-600">0</span> / 6 Soalan
+        </div>
+        
+        <div id="sea-area">
+            <div id="fishing-line"></div>
+            <div id="fishing-hook">🪝</div>
+            <div id="fishing-boat">
+                <div class="absolute -top-12 w-full flex justify-around text-4xl z-10" style="padding: 0 10px;">
+                    <span>👨‍🎓</span><span>🌺</span><span>👩‍🏫</span>
+                </div>
+                <div style="margin-top: 22px; color: white; text-align: center;">
+                    <div class="text-xs uppercase tracking-wider font-bold">SOALAN SIMBOL & KEGUNAAN:</div>
+                    <div id="current-target">Loading...</div>
+                </div>
+            </div>
+            
+            <div id="fish-grid" class="contents"></div>
+        </div>
+    </div>
+
+    <!-- ==================================================== -->
+    <!-- SKRIN SKOR / TAHNIAH -->
+    <!-- ==================================================== -->
+    <div id="tahniah-screen" class="hidden text-center py-6">
+        <h1 class="text-4xl md:text-6xl font-extrabold text-emerald-500 bouncing-title mb-4">
+            🎉 SYABAS & TAHNIAH! 🎉
+        </h1>
+        <div class="bg-amber-50 border-4 border-amber-800 rounded-2xl p-6 max-w-lg mx-auto shadow-inner">
+            <p class="text-2xl font-bold text-amber-900 mb-2">Kuiz Bunga Kebangsaan Selesai!</p>
+            <div class="text-3xl font-extrabold text-orange-600 my-3">
+                Jumlah Markah: <span id="final-score-val">0</span>
+            </div>
+            <p id="final-grade" class="text-xl font-bold text-blue-600 mb-4">Gred: A+ (Cemerlang)</p>
+            <p class="text-sm text-gray-700">
+                Anda telah menguasai latar belakang, warna merah, 5 kelopak Rukun Negara, dan kegunaan simbol Bunga Raya dalam kehidupan rakyat Malaysia!
+            </p>
+        </div>
+        <button onclick="showMenu()" class="lego-btn mt-6">MAIN LAGI SEPERTI INDEX</button>
+    </div>
+
+</div>
+
+<script>
+    // System Audio Synthesizer & Fallback System
+    let audioCtx = null;
+    let isMuted = false;
+
+    // Persediaan Audio Context automatik
+    function initAudio() {
+        if (!audioCtx) {
+            try {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            } catch(e) {}
+        }
+        if (audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    }
+
+    function playTone(freq, type, duration) {
+        if (isMuted) return;
+        initAudio();
+        if (!audioCtx) return;
+        try {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type || 'sine';
+            osc.frequency.setValueAtTime(freq || 440, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (duration || 0.15));
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + (duration || 0.15));
+        } catch(e) {}
+    }
+
+    // Persediaan elemen audio fail luaran dari folder anda
+    const soundFiles = {
+        klik: new Audio('sfx_klik.mp3'),
+        pancing: new Audio('sfx_pancing.mp3'),
+        wrong: new Audio('sfx_wrong.mp3'),
+        celebrate: new Audio('sfx_celebrate.mp3'),
+        bgm1_2: new Audio('bgm_tahap1_2.mp3'),
+        bgm3: new Audio('bgm_tahap3.mp3')
+    };
+
+    // Tetapan Audio BGM Loop
+    soundFiles.bgm1_2.loop = true;
+    soundFiles.bgm3.loop = true;
+
+    function playExternalSound(soundObj, fallbackFreq, fallbackType, fallbackDuration) {
+        if (isMuted) return;
+        try {
+            soundObj.currentTime = 0;
+            const playPromise = soundObj.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(() => {
+                    playTone(fallbackFreq, fallbackType, fallbackDuration);
+                });
+            }
+        } catch(e) {
+            playTone(fallbackFreq, fallbackType, fallbackDuration);
+        }
+    }
+
+    function playKlik() {
+        playExternalSound(soundFiles.klik, 600, 'sine', 0.1);
+    }
+
+    function playWrong() {
+        playExternalSound(soundFiles.wrong, 220, 'sawtooth', 0.25);
+    }
+
+    function playPancing() {
+        playExternalSound(soundFiles.pancing, 800, 'triangle', 0.2);
+    }
+
+    function playCelebrate() {
+        playExternalSound(soundFiles.celebrate, 523.25, 'square', 0.4);
+    }
+
+    function playBGM(level) {
+        if (isMuted) return;
+        try {
+            soundFiles.bgm1_2.pause();
+            soundFiles.bgm3.pause();
+            if (level === 1 || level === 2) {
+                soundFiles.bgm1_2.currentTime = 0;
+                soundFiles.bgm1_2.play().catch(() => {});
+            } else if (level === 3) {
+                soundFiles.bgm3.currentTime = 0;
+                soundFiles.bgm3.play().catch(() => {});
+            }
+        } catch(e) {}
+    }
+
+    // Skor Pengurusan
+    let totalScore = 0;
+    function addScore(pts) {
+        totalScore += pts;
+        document.getElementById('total-score').textContent = totalScore;
+    }
+
+    // Navigasi Screen
+    function hideAllScreens() {
+        ['menu-screen', 'level1-screen', 'level2-screen', 'level3-screen', 'tahniah-screen'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.classList.add('hidden');
+        });
+    }
+
+    function showMenu() {
+        hideAllScreens();
+        try {
+            soundFiles.bgm1_2.pause();
+            soundFiles.bgm3.pause();
+        } catch(e) {}
+        document.getElementById('menu-screen').classList.remove('hidden');
+        document.getElementById('score-board').style.display = 'none';
+        document.body.style.background = 'var(--bg-l1)';
+    }
+
+    function startLevel(lvl) {
+        initAudio();
+        playKlik();
+        hideAllScreens();
+        document.getElementById('score-board').style.display = 'block';
+        playBGM(lvl);
+
+        if (lvl === 1) {
+            document.body.style.background = 'var(--bg-l1)';
+            document.getElementById('level1-screen').classList.remove('hidden');
+            initLevel1();
+        } else if (lvl === 2) {
+            document.body.style.background = 'var(--bg-l2)';
+            document.getElementById('level2-screen').classList.remove('hidden');
+            initLevel2();
+        } else if (lvl === 3) {
+            document.body.style.background = 'var(--bg-l3)';
+            document.getElementById('level3-screen').classList.remove('hidden');
+            initLevel3();
+        }
+    }
+
+    // ====================================================
+    // DATA & LOGIK LEVEL 1: MONSTER LAPAR (Latar Belakang)
+    // ====================================================
+    const L1_DATA = [
+        { t: 'Diumumkan oleh Tunku Abdul Rahman (1960)', c: true, i: '📜' },
+        { t: 'Dipilih daripada 7 jenis bunga popular', c: true, i: '🌸' },
+        { t: 'Dikenali & tumbuh subur di seluruh negara', c: true, i: '🌿' },
+        { t: 'Diumumkan oleh Tun Dr Mahathir pada 1998', c: false, i: '🥀' },
+        { t: 'Dipilih secara rawak tanpa pertandingan', c: false, i: '🍂' },
+        { t: 'Hanya terdapat di satu negeri sahaja', c: false, i: '💮' }
+    ];
+
+    function initLevel1() {
+        const container = document.getElementById('options-l1');
+        container.innerHTML = '';
+        document.getElementById('monster-mouth').innerHTML = '';
+        
+        [...L1_DATA].sort(() => Math.random() - 0.5).forEach(obj => {
+            const div = document.createElement('div');
+            div.className = 'draggable'; div.draggable = true;
+            div.innerHTML = `${obj.i} ${obj.t}`;
+            div.dataset.correct = obj.c;
+            div.onmousedown = playKlik;
+            container.appendChild(div);
+        });
+        setupDragAndDrop();
+    }
+
+    function checkLevel1() {
+        playKlik();
+        const mouthItems = document.querySelectorAll('#monster-mouth .draggable');
+        let correct = 0;
+        mouthItems.forEach(i => {
+            if(i.dataset.correct === 'true') { 
+                if(!i.classList.contains('correct-answer')) {
+                    i.classList.add('correct-answer');
+                    addScore(10);
+                }
+                correct++; 
+            } else { 
+                playWrong();
+                addScore(-2);
+                i.classList.add('shake'); 
+                setTimeout(() => {
+                    i.classList.remove('shake');
+                    document.getElementById('options-l1').appendChild(i);
+                }, 400); 
+            }
+        });
+        if(correct === 3 && mouthItems.length === 3) {
+            playCelebrate();
+            setTimeout(() => { showTahniahScreen(); }, 1000);
+        }
+    }
+
+    // ====================================================
+    // DATA & LOGIK LEVEL 2: BAKUL AJAIB (Warna & 5 Kelopak)
+    // ====================================================
+    const L2_DATA = [
+        { t: 'Hibiscus rosa-sinensis', c: 'warna', i: '🔬' },
+        { t: 'Merah = Keberanian', c: 'warna', i: '🔴' },
+        { t: 'Merah = Keteguhan Jiwa', c: 'warna', i: '💪' },
+        { t: '5 Kelopak = 5 Prinsip Rukun Negara', c: 'kelopak', i: '✋' },
+        { t: 'Menyemarakkan Semangat Perpaduan', c: 'kelopak', i: '🤝' },
+        { t: 'Simbol Keharmonian Rakyat', c: 'kelopak', i: '✨' },
+        { t: 'Dipilih tahun 1960', c: 'sejarah', i: '📅' },
+        { t: '7 Jenis Bunga Diuji', c: 'sejarah', i: '🌻' }
+    ];
+
+    function initLevel2() {
+        const container = document.getElementById('options-l2');
+        container.innerHTML = '';
+        ['warna','kelopak','sejarah'].forEach(c => document.getElementById(`box-${c}`).querySelectorAll('.draggable').forEach(e => e.remove()));
+
+        [...L2_DATA].sort(() => Math.random() - 0.5).forEach(obj => {
+            const div = document.createElement('div');
+            div.className = 'draggable'; div.draggable = true;
+            div.dataset.cat = obj.c;
+            div.innerHTML = `<span style="font-size:1.2rem">${obj.i}</span> ${obj.t}`;
+            div.onmousedown = playKlik;
+            container.appendChild(div);
+        });
+        setupDragAndDrop();
+    }
+
+    function checkLevel2() {
+        playKlik();
+        let totalCorrect = 0;
+        ['warna','kelopak','sejarah'].forEach(cat => {
+            const items = document.querySelectorAll(`#box-${cat} .draggable`);
+            items.forEach(i => {
+                if(i.dataset.cat === cat) { 
+                    if(!i.classList.contains('correct-answer')) {
+                        i.classList.add('correct-answer');
+                        addScore(10);
+                    }
+                    totalCorrect++; 
+                } else { 
+                    playWrong();
+                    addScore(-2);
+                    i.classList.add('shake'); 
+                    setTimeout(() => {
+                        i.classList.remove('shake');
+                        document.getElementById('options-l2').appendChild(i);
+                    }, 400); 
+                }
+            });
+        });
+        if(totalCorrect === L2_DATA.length) { 
+            playCelebrate();
+            setTimeout(() => { showTahniahScreen(); }, 1000); 
+        }
+    }
+
+    // ====================================================
+    // DATA & LOGIK LEVEL 3: MEMANCING ILMU (Simbol Dalam Kehidupan)
+    // ====================================================
+    const L3_DATA = [
+        { q: 'Symbol Bunga Raya terukir pada mata wang negara:', a: 'Wang Kertas & Syiling' },
+        { q: 'Dokumen perjalanan rasmi warga Malaysia yang ada logo Bunga Raya:', a: 'Pasport Malaysia' },
+        { q: 'Lambang rasmi Kerajaan Malaysia yang mengandungi Bunga Raya:', a: 'Jatanegara Malaysia' },
+        { q: 'Digunakan sebagai hiasan majlis dan tradisi kelopak bunga:', a: 'Ubat & Hiasan Tradisional' },
+        { q: 'Diumumkan sebagai Bunga Kebangsaan oleh PM Pertama:', a: 'Tunku Abdul Rahman' },
+        { q: 'Bilangan kelopak Bunga Raya yang melambangkan Rukun Negara:', a: '5 Kelopak' }
+    ];
+
+    let quizIdx = 0;
+    let l3Score = 0;
+    let pool = [];
+    const fishIcons = ['🐟', '🐠', '🐡', '🦈', '🦐', '🐙'];
+
+    function initLevel3() {
+        pool = [...L3_DATA].sort(() => Math.random() - 0.5);
+        quizIdx = 0; l3Score = 0;
+        document.getElementById('l3-score').textContent = '0';
+        const grid = document.getElementById('fish-grid');
+        grid.innerHTML = '';
+        
+        const line = document.getElementById('fishing-line');
+        const hook = document.getElementById('fishing-hook');
+        if(line) line.style.opacity = '0';
+        if(hook) hook.style.opacity = '0';
+
+        L3_DATA.forEach((d, index) => {
+            const fish = document.createElement('div');
+            fish.className = 'fish-bubble swim-anim';
+            fish.style.animationDelay = (index * 0.4) + 's';
+            const icon = fishIcons[index % fishIcons.length];
+            fish.innerHTML = `<span class="text-3xl">${icon}</span><span>${d.a}</span>`;
+            fish.onclick = function() {
+                const fishElem = this;
+                const seaArea = document.getElementById('sea-area');
+                const seaRect = seaArea.getBoundingClientRect();
+                const fishRect = fishElem.getBoundingClientRect();
+                const boatElem = document.getElementById('fishing-boat').getBoundingClientRect();
+
+                // Turunkan Tali Pancing & Mata Pancing (🪝) ke posisi ikan
+                const hookX = (fishRect.left + fishRect.width/2) - seaRect.left;
+                const hookY = (fishRect.top + 10) - seaRect.top;
+                
+                line.style.left = hookX + 'px';
+                line.style.top = Math.max(0, (boatElem.bottom - seaRect.top - 20)) + 'px';
+                line.style.height = Math.max(20, (hookY - (boatElem.bottom - seaRect.top - 20))) + 'px';
+                line.style.opacity = '1';
+
+                hook.style.left = hookX + 'px';
+                hook.style.top = hookY + 'px';
+                hook.style.opacity = '1';
+
+                if(d.a === pool[quizIdx].a) {
+                    playPancing();
+                    addScore(15);
+                    l3Score++; 
+                    document.getElementById('l3-score').textContent = l3Score;
+
+                    // Ikan bergoyang-goyang (晃动) apabila tersangkut pada mata pancing
+                    setTimeout(() => {
+                        fishElem.classList.remove('swim-anim');
+                        fishElem.classList.add('hooked-up');
+                        fishElem.style.left = fishRect.left + 'px';
+                        fishElem.style.top = fishRect.top + 'px';
+                        fishElem.style.width = fishRect.width + 'px';
+
+                        // Tarik ikan naik ke bot pancing
+                        setTimeout(() => {
+                            fishElem.style.left = (boatElem.left + boatElem.width/2 - fishRect.width/2) + 'px';
+                            fishElem.style.top = (boatElem.top + 20) + 'px';
+                            fishElem.style.opacity = '0';
+                            
+                            line.style.height = '0px';
+                            line.style.opacity = '0';
+                            hook.style.top = (boatElem.bottom - seaRect.top) + 'px';
+                            hook.style.opacity = '0';
+                        }, 400);
+                    }, 300);
+
+                    quizIdx++;
+                    if(quizIdx < pool.length) updateShipQuestion();
+                    else { 
+                        playCelebrate();
+                        setTimeout(() => showTahniahScreen(), 1200);
+                    }
+                } else {
+                    playWrong();
+                    addScore(-2);
+                    fishElem.classList.add('shake');
+                    setTimeout(() => {
+                        fishElem.classList.remove('shake');
+                        line.style.opacity = '0';
+                        hook.style.opacity = '0';
+                    }, 400);
+                }
+            };
+            grid.appendChild(fish);
+        });
+        updateShipQuestion();
+    }
+
+    function updateShipQuestion() {
+        if (pool[quizIdx]) {
+            document.getElementById('current-target').textContent = pool[quizIdx].q;
+        }
+    }
+
+    function showTahniahScreen() {
+        hideAllScreens();
+        document.getElementById('tahniah-screen').classList.remove('hidden');
+        document.getElementById('final-score-val').textContent = totalScore;
+        
+        let gred = "Gred: A+ (Sangat Cemerlang)";
+        if(totalScore < 40) gred = "Gred: C (Boleh Cuba Lagi)";
+        else if(totalScore < 70) gred = "Gred: B (Baik)";
+        else if(totalScore < 90) gred = "Gred: A (Cemerlang)";
+        
+        document.getElementById('final-grade').textContent = gred;
+    }
+
+    // ====================================================
+    // SISTEM DRAG & DROP (Touch & Mouse)
+    // ====================================================
+    let draggedItem = null;
+    let touchDragState = null;
+
+    function getDropzoneAtPoint(x, y) {
+        return document.elementFromPoint(x, y)?.closest('.dropzone') || null;
+    }
+
+    function resetTouchDrag() {
+        if(!touchDragState) return;
+        const { item } = touchDragState;
+        item.classList.remove('dragging-touch');
+        item.style.position = ''; item.style.left = ''; item.style.top = '';
+        item.style.width = ''; item.style.zIndex = ''; item.style.pointerEvents = '';
+        touchDragState = null;
+    }
+
+    function startTouchDrag(e) {
+        if(e.pointerType === 'mouse') return;
+        playKlik();
+        const rect = this.getBoundingClientRect();
+        touchDragState = {
+            item: this, pointerId: e.pointerId,
+            offsetX: e.clientX - rect.left, offsetY: e.clientY - rect.top
+        };
+        this.classList.add('dragging-touch');
+        this.style.width = rect.width + 'px';
+        this.style.position = 'fixed';
+        this.style.left = rect.left + 'px'; this.style.top = rect.top + 'px';
+        this.style.zIndex = '9999'; this.style.pointerEvents = 'none';
+        try {
+            this.setPointerCapture?.(e.pointerId);
+        } catch(err) {}
+    }
+
+    function setupDragAndDrop() {
+        resetTouchDrag();
+        document.querySelectorAll('.draggable').forEach(i => {
+            i.ondragstart = function(e) { draggedItem = this; };
+            i.onpointerdown = startTouchDrag;
+        });
+        document.querySelectorAll('.dropzone').forEach(z => {
+            z.ondragover = e => e.preventDefault();
+            z.ondrop = function(e) {
+                e.preventDefault();
+                if(draggedItem) this.appendChild(draggedItem);
+                draggedItem = null;
+            };
+        });
+        document.onpointermove = (e) => {
+            if(touchDragState && touchDragState.pointerId === e.pointerId) {
+                e.preventDefault();
+                touchDragState.item.style.left = (e.clientX - touchDragState.offsetX) + 'px';
+                touchDragState.item.style.top = (e.clientY - touchDragState.offsetY) + 'px';
+            }
+        };
+        document.onpointerup = (e) => {
+            if(touchDragState && touchDragState.pointerId === e.pointerId) {
+                const zone = getDropzoneAtPoint(e.clientX, e.clientY);
+                if(zone) zone.appendChild(touchDragState.item);
+                resetTouchDrag();
+            }
+        };
+        document.onpointercancel = () => resetTouchDrag();
+    }
+</script>
+</body>
+</html>
